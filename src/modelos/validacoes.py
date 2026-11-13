@@ -1,4 +1,4 @@
-def validar_texto_identificacao(valor, campo, minimo=2):
+def validar_texto_identificacao(valor: object, campo: str, minimo: int = 2) -> str:
     """Valida um campo textual que identifica um componente."""
     if not isinstance(valor, str):
         raise ValueError(f"{campo} deve ser um texto.")
@@ -18,7 +18,7 @@ def validar_texto_identificacao(valor, campo, minimo=2):
     return valor
 
 
-def validar_memoria_ram(valor):
+def validar_memoria_ram(valor: object) -> str:
     """Valida a memória RAM em MB ou GB."""
     if not isinstance(valor, str):
         raise ValueError("A memória RAM deve ser informada como texto.")

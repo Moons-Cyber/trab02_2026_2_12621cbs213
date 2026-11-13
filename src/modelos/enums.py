@@ -1,5 +1,8 @@
 """Enumerações do sistema de inventário."""
 
+from __future__ import annotations
+
+
 from enum import Enum, IntEnum
 
 
@@ -12,7 +15,7 @@ class TipoAtivo(IntEnum):
     BANCO_DADOS = 4
 
     @property
-    def rotulo(self):
+    def rotulo(self) -> str:
         """Nome para exibir ao usuário (ex.: 'Banco de dados')."""
         return _ROTULOS_TIPO[self]
 
@@ -38,7 +41,7 @@ class Severidade(Enum):
     CRITICA = "Crítica"
 
     @classmethod
-    def a_partir_da_nota(cls, nota):
+    def a_partir_da_nota(cls, nota: float) -> Severidade:
         if nota >= 9.0:
             return cls.CRITICA
         if nota >= 7.0:

@@ -1,4 +1,9 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import ClassVar
+
+from src.modelos.vulnerabilidades import Vulnerabilidade
 from src.modelos.validacoes import validar_texto_identificacao
 
 
@@ -7,10 +12,11 @@ class Ativo(ABC):
     # Cada subclasse declara o seu campo próprio (ex.: memoria_ram) e o rótulo
     # exibido ao usuário. Menu e gerenciador consultam estes atributos, em vez
     # de manter dicionários paralelos "tipo -> campo" espalhados pelo código.
-    campo_especifico = None
-    rotulo_campo = None
+    campo_especifico: ClassVar[str]
+    rotulo_campo: ClassVar[str]
 
-    def __init__(self, id, nome, responsavel,setor,vulnerabilidades):
+    def __init__(self, id: int, nome: str, responsavel: str, setor: str,
+                 vulnerabilidades: list[Vulnerabilidade]) -> None:
         self.id = id
         self.nome = validar_texto_identificacao(nome, "Nome", minimo=3)
         self.responsavel = responsavel
@@ -18,10 +24,10 @@ class Ativo(ABC):
         self.vulnerabilidades = vulnerabilidades
 
     @abstractmethod
-    def exibir_detalhes(self):
+    def exibir_detalhes(self) -> None:
         pass
 
-    def exibir_detalhes_comuns(self):
+    def exibir_detalhes_comuns(self) -> None:
         print(f"ID: {self.id}")
         print(f"Nome: {self.nome}")
         print(f"Responsável: {self.responsavel}")
@@ -30,7 +36,7 @@ class Ativo(ABC):
         for vulnerabilidade in self.vulnerabilidades:
             print(f"- {vulnerabilidade}")
 
-    def para_dict(self):
+    def para_dict(self) -> dict[str, object]:
         return {
             "id": self.id,
             "tipo": self.obter_tipo(),
@@ -48,7 +54,7 @@ class Ativo(ABC):
 
     @staticmethod
     @abstractmethod
-    def validar_campo_especifico(valor):
+    def validar_campo_especifico(valor: object) -> str:
         """Valida e normaliza o valor do campo próprio do tipo.
 
         Usado no construtor E na atualização: sem isso, uma alteração
@@ -57,11 +63,11 @@ class Ativo(ABC):
         """
 
     @abstractmethod
-    def obter_tipo(self):
+    def obter_tipo(self) -> str:
         pass
 
     @abstractmethod
-    def obter_fator_exposicao(self):
+    def obter_fator_exposicao(self) -> float:
         """Fator que pondera o risco próprio deste tipo de ativo.
 
         1.0 é a exposição de referência; acima de 1.0, mais exposto à rede.

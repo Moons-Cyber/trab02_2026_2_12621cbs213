@@ -11,7 +11,7 @@ MARGEM_SOMA_PESOS = 1e-9
 LIMITE_SOMA_PESOS = 1.0 - MARGEM_SOMA_PESOS
 
 
-def soma_de_pesos_valida(soma):
+def soma_de_pesos_valida(soma: float) -> bool:
     """True se a soma dos pesos recebidos por um ativo mantém I - A invertível."""
     return soma < LIMITE_SOMA_PESOS
 
@@ -21,10 +21,10 @@ class Dependencia:
 
     def __init__(
         self,
-        ativo_origem_id,
-        ativo_destino_id,
-        peso,
-    ):
+        ativo_origem_id: int,
+        ativo_destino_id: int,
+        peso: float,
+    ) -> None:
         if not isinstance(ativo_origem_id, int) or ativo_origem_id <= 0:
             raise ValueError("O ID de origem deve ser um inteiro positivo.")
 
@@ -49,7 +49,7 @@ class Dependencia:
         self.ativo_destino_id = ativo_destino_id
         self.peso = float(peso)
 
-    def para_dict(self):
+    def para_dict(self) -> dict[str, int | float]:
         """Converte a dependência para um dicionário serializável."""
         return {
             "ativo_origem_id": self.ativo_origem_id,
@@ -57,7 +57,7 @@ class Dependencia:
             "peso": self.peso,
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Retorna uma representação legível da dependência."""
         return (
             f"Ativo {self.ativo_origem_id} -> "

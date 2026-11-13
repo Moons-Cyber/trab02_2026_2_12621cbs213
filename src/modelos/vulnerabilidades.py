@@ -1,5 +1,8 @@
 """Modelo de vulnerabilidade, identificada por um ID próprio."""
 
+from __future__ import annotations
+
+
 import hashlib
 import re
 
@@ -8,13 +11,13 @@ from src.modelos.enums import Severidade, StatusVulnerabilidade
 PADRAO_CVE = re.compile(r"^CVE-\d{4}-\d{4,}$")
 
 
-def normalizar_cve(texto):
+def normalizar_cve(texto: str) -> str | None:
     """Devolve o ID em maiúsculas se for um CVE válido; senão, None."""
     candidato = texto.strip().upper()
     return candidato if PADRAO_CVE.match(candidato) else None
 
 
-def resumir(texto, limite=90):
+def resumir(texto: str, limite: int = 90) -> str:
     """Encurta um texto para exibição: primeira frase, no máximo `limite` letras.
 
     Corta no último espaço antes do limite (para não partir palavras) e
@@ -30,7 +33,7 @@ def resumir(texto, limite=90):
     return corte + "..."
 
 
-def _id_local(descricao, categoria):
+def _id_local(descricao: str, categoria: str) -> str:
     """ID determinístico para vulnerabilidades sem CVE.
 
     Usa só descrição + categoria (e NÃO status/severidade), para que mudar o
@@ -41,8 +44,10 @@ def _id_local(descricao, categoria):
 
 
 class Vulnerabilidade:
-    def __init__(self, descricao, categoria, severidade, status,
-                 id=None, fonte="manual", descricao_original=None):
+    def __init__(self, descricao: str, categoria: str, severidade: float,
+                 status: StatusVulnerabilidade | str,
+                 id: str | None = None, fonte: str = "manual",
+                 descricao_original: str | None = None) -> None:
         if isinstance(severidade, bool) or not isinstance(severidade, (int, float)):
             raise ValueError("A severidade deve ser um número.")
         if not 0 <= severidade <= 10:
@@ -61,17 +66,17 @@ class Vulnerabilidade:
         self.id = id or _id_local(descricao, categoria)
 
     @property
-    def afeta_risco(self):
+    def afeta_risco(self) -> bool:
         """Uma vulnerabilidade corrigida deixa de contar no modelo de risco."""
         return self.status != StatusVulnerabilidade.CORRIGIDA
 
     @property
-    def classificacao(self):
+    def classificacao(self) -> Severidade:
         """Severidade textual (baixa/média/alta/crítica) derivada da nota."""
         return Severidade.a_partir_da_nota(self.severidade)
 
-    def para_dict(self):
-        dados = {
+    def para_dict(self) -> dict[str, object]:
+        dados: dict[str, object] = {
             "id": self.id,
             "descricao": self.descricao,
             "categoria": self.categoria,
@@ -84,7 +89,7 @@ class Vulnerabilidade:
         return dados
 
     @classmethod
-    def de_dict(cls, dados):
+    def de_dict(cls, dados: dict[str, object]) -> Vulnerabilidade:
         """Recria o objeto; aceita registros antigos sem 'id' nem 'fonte'."""
         return cls(
             descricao=dados["descricao"],
@@ -96,7 +101,7 @@ class Vulnerabilidade:
             descricao_original=dados.get("descricao_original"),
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"[{self.id}] {resumir(self.descricao)} | Categoria: {self.categoria} | "
             f"Nota: {self.severidade:.1f} ({self.classificacao.value}) | "
