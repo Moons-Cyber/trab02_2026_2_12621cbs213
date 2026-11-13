@@ -178,6 +178,46 @@ ARQUIVOS_AERO = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Tratamento de erros HTTP
+# ---------------------------------------------------------------------------
+def _registrar_tratadores_de_erro(app):
+    """Liga ao app o que cada tipo de erro vira em resposta JSON."""
+    @app.errorhandler(ErroApi)
+    def tratar_erro_api(erro):
+        return jsonify({"erro": erro.mensagem, **erro.extras}), erro.status
+
+    @app.errorhandler(ErroDados)
+    def tratar_dados_invalidos(erro):
+        # O Flask escolhe o handler mais específico: este vem antes do de
+        # ValueError. O detalhe (com caminho de arquivo) vai só para o log.
+        app.logger.error("Dados armazenados inválidos: %s", erro)
+        return jsonify({
+            "erro": "Os dados armazenados estão ilegíveis ou inconsistentes. "
+                    "Consulte o log do servidor."
+        }), 503
+
+    @app.errorhandler(ValueError)
+    def tratar_valor_invalido(erro):
+        # Regras de domínio (ex.: nota fora de 0-10, peso inválido).
+        return jsonify({"erro": str(erro)}), 400
+
+    @app.errorhandler(HTTPException)
+    def tratar_http(erro):
+        return jsonify({"erro": erro.description}), erro.code
+
+    @app.errorhandler(OSError)
+    def tratar_armazenamento(erro):
+        app.logger.exception("Falha de armazenamento")
+        return jsonify({"erro": "Erro ao acessar o armazenamento de dados."}), 500
+
+    @app.errorhandler(Exception)
+    def tratar_inesperado(erro):
+        # Nunca devolve o traceback ao cliente; ele vai para o log.
+        app.logger.exception("Erro inesperado")
+        return jsonify({"erro": "Erro interno do servidor."}), 500
+
+
 def criar_app(pasta_dados=".", cliente_nvd=None, diario_intervalo=None,
               diario_max=None, persistencia="json"):
     """Cria a aplicação Flask.
@@ -312,40 +352,7 @@ def criar_app(pasta_dados=".", cliente_nvd=None, diario_intervalo=None,
             id=cve, fonte=fonte, descricao_original=original,
         )
 
-    # ------------------------------------------------------------ erros HTTP
-    @app.errorhandler(ErroApi)
-    def tratar_erro_api(erro):
-        return jsonify({"erro": erro.mensagem, **erro.extras}), erro.status
-
-    @app.errorhandler(ErroDados)
-    def tratar_dados_invalidos(erro):
-        # O Flask escolhe o handler mais específico: este vem antes do de
-        # ValueError. O detalhe (com caminho de arquivo) vai só para o log.
-        app.logger.error("Dados armazenados inválidos: %s", erro)
-        return jsonify({
-            "erro": "Os dados armazenados estão ilegíveis ou inconsistentes. "
-                    "Consulte o log do servidor."
-        }), 503
-
-    @app.errorhandler(ValueError)
-    def tratar_valor_invalido(erro):
-        # Regras de domínio (ex.: nota fora de 0-10, peso inválido).
-        return jsonify({"erro": str(erro)}), 400
-
-    @app.errorhandler(HTTPException)
-    def tratar_http(erro):
-        return jsonify({"erro": erro.description}), erro.code
-
-    @app.errorhandler(OSError)
-    def tratar_armazenamento(erro):
-        app.logger.exception("Falha de armazenamento")
-        return jsonify({"erro": "Erro ao acessar o armazenamento de dados."}), 500
-
-    @app.errorhandler(Exception)
-    def tratar_inesperado(erro):
-        # Nunca devolve o traceback ao cliente; ele vai para o log.
-        app.logger.exception("Erro inesperado")
-        return jsonify({"erro": "Erro interno do servidor."}), 500
+    _registrar_tratadores_de_erro(app)
 
     # ---------------------------------------------------------------- geral
     @app.get("/")
