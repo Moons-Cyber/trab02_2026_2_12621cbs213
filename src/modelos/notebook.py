@@ -21,10 +21,5 @@ class Notebook(Ativo):
     def obter_tipo(self):
         return "Notebook"
 
-    def para_dict(self):
-        data = super().para_dict()
-        data["memoria_ram"] = self.memoria_ram
-        return data
-
     def obter_fator_exposicao(self):
         return 1.0  # referência: usuário final, atrás da rede interna

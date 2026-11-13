@@ -21,10 +21,5 @@ class Roteador(Ativo):
     def obter_tipo(self):
         return "Roteador"
 
-    def para_dict(self):
-        data = super().para_dict()
-        data["modelo"] = self.modelo
-        return data
-
     def obter_fator_exposicao(self):
         return 1.2  # borda da rede, mas com poucas portas de serviço

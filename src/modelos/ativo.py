@@ -40,7 +40,10 @@ class Ativo(ABC):
             "vulnerabilidades": [
                 vulnerabilidade.para_dict()
                 for vulnerabilidade in self.vulnerabilidades
-            ]
+            ],
+            # O campo próprio do tipo (memoria_ram, processador...) vem da
+            # subclasse, que só declara o nome em campo_especifico.
+            self.campo_especifico: getattr(self, self.campo_especifico),
         }
 
     @staticmethod

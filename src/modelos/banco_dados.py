@@ -21,10 +21,5 @@ class BancoDeDados(Ativo):
     def obter_tipo(self):
         return "BancoDeDados"
 
-    def para_dict(self):
-        data = super().para_dict()
-        data["sgbd"] = self.sgbd
-        return data
-
     def obter_fator_exposicao(self):
         return 1.0  # normalmente atrás da aplicação; o risco vem pela dependência

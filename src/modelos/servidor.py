@@ -21,10 +21,5 @@ class Servidor(Ativo):
     def obter_tipo(self):
         return "Servidor"
 
-    def para_dict(self):
-        data = super().para_dict()
-        data["processador"] = self.processador
-        return data
-
     def obter_fator_exposicao(self):
         return 1.5  # serviços publicados na rede
