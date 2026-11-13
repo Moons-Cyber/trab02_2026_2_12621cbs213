@@ -709,49 +709,65 @@ def executar_com_tratamento(funcao, *args):
 
 
 # ============================================================
+# MENUS (tabela de despacho)
+# ============================================================
+
+def rodar_menu(cabecalho, acoes, mensagem_saida=None,
+               mensagem_invalida="Opção inválida."):
+    """Mostra um menu e executa a ação da opção escolhida, até digitar 0.
+
+    cabecalho: linhas impressas a cada volta do menu.
+    acoes: dicionário {"1": função_sem_argumentos, ...}. Uma opção nova
+           entra aqui, sem mexer na lógica do laço (antes era uma cadeia
+           de if/elif repetida em cada menu).
+    """
+    while True:
+        for linha in cabecalho:
+            print(linha)
+
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "0":
+            if mensagem_saida:
+                print(mensagem_saida)
+            return
+
+        acao = acoes.get(opcao)
+
+        if acao is None:
+            print(mensagem_invalida)
+        else:
+            acao()
+
+
+# ============================================================
 # SUBMENU: ATIVOS
 # ============================================================
 
 def menu_ativos(gerenciador, gerenciador_dependencias, cliente_nvd):
     """Agrupa as operações de gerenciamento de ativos."""
-    while True:
-        print("\n========== GERENCIAR ATIVOS ==========")
-        print("1. Cadastrar ativo")
-        print("2. Listar todos os ativos")
-        print("3. Buscar ativo por ID ou nome")
-        print("4. Atualizar ativo")
-        print("5. Remover ativo")
-        print("0. Voltar")
-        print("======================================")
-
-        opcao = input("Escolha uma opção: ").strip()
-
-        if opcao == "1":
-            executar_com_tratamento(
-                cadastrar_ativo,
-                gerenciador,
-                cliente_nvd,
-            )
-        elif opcao == "2":
-            executar_com_tratamento(consultar_ativos, gerenciador)
-        elif opcao == "3":
-            executar_com_tratamento(buscar_ativo, gerenciador)
-        elif opcao == "4":
-            executar_com_tratamento(
-                atualizar_ativo,
-                gerenciador,
-                cliente_nvd,
-            )
-        elif opcao == "5":
-            executar_com_tratamento(
-                remover_ativo,
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "0":
-            return
-        else:
-            print("Opção inválida.")
+    rodar_menu(
+        [
+            "\n========== GERENCIAR ATIVOS ==========",
+            "1. Cadastrar ativo",
+            "2. Listar todos os ativos",
+            "3. Buscar ativo por ID ou nome",
+            "4. Atualizar ativo",
+            "5. Remover ativo",
+            "0. Voltar",
+            "======================================",
+        ],
+        {
+            "1": lambda: executar_com_tratamento(
+                cadastrar_ativo, gerenciador, cliente_nvd),
+            "2": lambda: executar_com_tratamento(consultar_ativos, gerenciador),
+            "3": lambda: executar_com_tratamento(buscar_ativo, gerenciador),
+            "4": lambda: executar_com_tratamento(
+                atualizar_ativo, gerenciador, cliente_nvd),
+            "5": lambda: executar_com_tratamento(
+                remover_ativo, gerenciador, gerenciador_dependencias),
+        },
+    )
 
 
 # ============================================================
@@ -760,36 +776,24 @@ def menu_ativos(gerenciador, gerenciador_dependencias, cliente_nvd):
 
 def menu_vulnerabilidades(gerenciador, cliente_nvd):
     """Agrupa as operações de vulnerabilidades."""
-    while True:
-        print("\n======= GERENCIAR VULNERABILIDADES =======")
-        print("1. Consultar vulnerabilidades de um ativo")
-        print("2. Adicionar vulnerabilidade a um ativo")
-        print("3. Atualizar status de uma vulnerabilidade")
-        print("0. Voltar")
-        print("==========================================")
-
-        opcao = input("Escolha uma opção: ").strip()
-
-        if opcao == "1":
-            executar_com_tratamento(
-                consultar_vulnerabilidades_do_ativo,
-                gerenciador,
-            )
-        elif opcao == "2":
-            executar_com_tratamento(
-                adicionar_vulnerabilidade_ao_ativo,
-                gerenciador,
-                cliente_nvd,
-            )
-        elif opcao == "3":
-            executar_com_tratamento(
-                atualizar_status_da_vulnerabilidade,
-                gerenciador,
-            )
-        elif opcao == "0":
-            return
-        else:
-            print("Opção inválida.")
+    rodar_menu(
+        [
+            "\n======= GERENCIAR VULNERABILIDADES =======",
+            "1. Consultar vulnerabilidades de um ativo",
+            "2. Adicionar vulnerabilidade a um ativo",
+            "3. Atualizar status de uma vulnerabilidade",
+            "0. Voltar",
+            "==========================================",
+        ],
+        {
+            "1": lambda: executar_com_tratamento(
+                consultar_vulnerabilidades_do_ativo, gerenciador),
+            "2": lambda: executar_com_tratamento(
+                adicionar_vulnerabilidade_ao_ativo, gerenciador, cliente_nvd),
+            "3": lambda: executar_com_tratamento(
+                atualizar_status_da_vulnerabilidade, gerenciador),
+        },
+    )
 
 
 # ============================================================
@@ -798,34 +802,23 @@ def menu_vulnerabilidades(gerenciador, cliente_nvd):
 
 def menu_risco(gerenciador, gerenciador_dependencias):
     """Agrupa análise de risco, dependências e diagnóstico."""
-    while True:
-        print("\n======= ANÁLISE DE RISCO =======")
-        print("1. Calcular risco próprio e efetivo")
-        print("2. Gerenciar dependências entre ativos")
-        print("3. Diagnóstico técnico do cálculo")
-        print("0. Voltar")
-        print("================================")
-
-        opcao = input("Escolha uma opção: ").strip()
-
-        if opcao == "1":
-            executar_com_tratamento(
-                analisar_risco,
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "2":
-            menu_dependencias(gerenciador, gerenciador_dependencias)
-        elif opcao == "3":
-            executar_com_tratamento(
-                diagnostico_tecnico,
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "0":
-            return
-        else:
-            print("Opção inválida.")
+    rodar_menu(
+        [
+            "\n======= ANÁLISE DE RISCO =======",
+            "1. Calcular risco próprio e efetivo",
+            "2. Gerenciar dependências entre ativos",
+            "3. Diagnóstico técnico do cálculo",
+            "0. Voltar",
+            "================================",
+        ],
+        {
+            "1": lambda: executar_com_tratamento(
+                analisar_risco, gerenciador, gerenciador_dependencias),
+            "2": lambda: menu_dependencias(gerenciador, gerenciador_dependencias),
+            "3": lambda: executar_com_tratamento(
+                diagnostico_tecnico, gerenciador, gerenciador_dependencias),
+        },
+    )
 
 
 # ============================================================
@@ -834,37 +827,23 @@ def menu_risco(gerenciador, gerenciador_dependencias):
 
 def menu_dependencias(gerenciador, gerenciador_dependencias):
     """Gerencia as dependências entre ativos."""
-    while True:
-        print("\n=== DEPENDÊNCIAS ENTRE ATIVOS ===")
-        print("1. Cadastrar dependência")
-        print("2. Listar dependências")
-        print("3. Remover dependência")
-        print("0. Voltar")
-
-        opcao = input("Escolha uma opção: ").strip()
-
-        if opcao == "1":
-            executar_com_tratamento(
-                cadastrar_dependencia,
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "2":
-            executar_com_tratamento(
-                listar_dependencias,
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "3":
-            executar_com_tratamento(
-                remover_dependencia,
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "0":
-            return
-        else:
-            print("Opção inválida.")
+    rodar_menu(
+        [
+            "\n=== DEPENDÊNCIAS ENTRE ATIVOS ===",
+            "1. Cadastrar dependência",
+            "2. Listar dependências",
+            "3. Remover dependência",
+            "0. Voltar",
+        ],
+        {
+            "1": lambda: executar_com_tratamento(
+                cadastrar_dependencia, gerenciador, gerenciador_dependencias),
+            "2": lambda: executar_com_tratamento(
+                listar_dependencias, gerenciador, gerenciador_dependencias),
+            "3": lambda: executar_com_tratamento(
+                remover_dependencia, gerenciador, gerenciador_dependencias),
+        },
+    )
 
 
 # ============================================================
@@ -881,37 +860,24 @@ def main():
     )
     cliente_nvd = ClienteNVD("cache_cve.json")
 
-    while True:
-        print("\n========== CYBER ASSET MANAGER ==========")
-        print("1. Gerenciar ativos")
-        print("2. Gerenciar vulnerabilidades")
-        print("3. Análise de risco e dependências")
-        print("0. Sair")
-        print("=========================================")
-
-        opcao = input("Escolha uma opção: ").strip()
-
-        if opcao == "1":
-            menu_ativos(
-                gerenciador,
-                gerenciador_dependencias,
-                cliente_nvd,
-            )
-        elif opcao == "2":
-            menu_vulnerabilidades(
-                gerenciador,
-                cliente_nvd,
-            )
-        elif opcao == "3":
-            menu_risco(
-                gerenciador,
-                gerenciador_dependencias,
-            )
-        elif opcao == "0":
-            print("Encerrando o inventário. Até mais!")
-            break
-        else:
-            print("Opção inválida. Escolha 0, 1, 2 ou 3.")
+    rodar_menu(
+        [
+            "\n========== CYBER ASSET MANAGER ==========",
+            "1. Gerenciar ativos",
+            "2. Gerenciar vulnerabilidades",
+            "3. Análise de risco e dependências",
+            "0. Sair",
+            "=========================================",
+        ],
+        {
+            "1": lambda: menu_ativos(
+                gerenciador, gerenciador_dependencias, cliente_nvd),
+            "2": lambda: menu_vulnerabilidades(gerenciador, cliente_nvd),
+            "3": lambda: menu_risco(gerenciador, gerenciador_dependencias),
+        },
+        mensagem_saida="Encerrando o inventário. Até mais!",
+        mensagem_invalida="Opção inválida. Escolha 0, 1, 2 ou 3.",
+    )
 
 
 if __name__ == "__main__":
